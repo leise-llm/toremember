@@ -14,21 +14,28 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        land = request.form['land']
-        urlaubsart = request.form['urlaubsart']
-        region = request.form['region']
-        
-        # Frage an das Sprachmodell
-        prompt = f"Beschreibe einen Urlaubstag in {region}, {land} mit der Urlaubsart {urlaubsart}."
-        response = openai.Completion.create(
-            model="gpt-4",
-            prompt=prompt,
-            max_tokens=150
+        # Stichworte aus dem Formular auslesen
+        keywords = [request.form.get(f'keyword{i}') for i in range(1, 6)]
+        prompt = (
+            "Du bist ein freundlicher Zuhörer. Erstelle einen kurzen Erinnerungstext "
+            "in Ich-Form, basierend auf folgenden Stichworten: "
+            + ", ".join(keywords) +
+            ". Nutze persönliche Sprache ('Ich', 'Wir', 'Du') und beschreibe eine Szene."
         )
-        
-        beschreibung = response.choices[0].text.strip()
-        return render_template('index.html', beschreibung=beschreibung)
-    
+
+        # Anfrage an OpenAI senden
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Du bist ein freundlicher Zuhörer."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300
+        )
+
+        reminder_text = response['choices'][0]['message']['content'].strip()
+        return render_template('index.html', reminder_text=reminder_text)
+
     return render_template('index.html')
 
 if __name__ == '__main__':
