@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Remember</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>To Remember</h1>
+        <p class="intro-text">
+            Diese Web-App hilft dir dabei, eine besondere Erinnerung festzuhalten.  
+            Denk an einen besonderen Tag – ein Treffen, einen Moment, einen Ort.  
+            Was macht diese Erinnerung aus? Gib bitte fünf Begriffe ein, die dir in den Sinn kommen.
+        </p>
+
+        <form id="keywordsForm" method="post" action="/generate_reminder">
+            <div class="input-group">
+                <input type="text" name="keyword1" placeholder="Begriff 1" required>
+                <input type="text" name="keyword2" placeholder="Begriff 2" required>
+                <input type="text" name="keyword3" placeholder="Begriff 3" required>
+                <input type="text" name="keyword4" placeholder="Begriff 4" required>
+                <input type="text" name="keyword5" placeholder="Begriff 5" required>
+            </div>
+            <button type="submit" class="submit-btn">Erinnerung erstellen</button>
+        </form>
+
+        {% if reminder_text %}
+        <div class="response-section">
+            <h2>Deine Erinnerung</h2>
+            <p>{{ reminder_text }}</p>
+        </div>
+        {% endif %}
+
+        {% if refinement_prompt %}
+        <div class="refinement-section">
+            <h3>War das richtig? Was fehlt noch?</h3>
+            <form method="post" action="/refine_reminder">
+                <textarea name="user_feedback" placeholder="Was war noch wichtig?"></textarea>
+                <button type="submit">Text überarbeiten</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if refined_text %}
+        <div class="response-section">
+            <h2>Erweiterte Erinnerung</h2>
+            <p>{{ refined_text }}</p>
+        </div>
+        {% endif %}
+
+        {% if followup_questions %}
+        <div class="followup-section">
+            <h3>Erzähle mehr dazu:</h3>
+            <form method="post" action="/finalize_reminder">
+                {% for question in followup_questions %}
+                    <label>{{ question }}</label>
+                    <input type="text" name="answer{{ loop.index }}" placeholder="Antwort in Stichpunkten">
+                {% endfor %}
+                <button type="submit">Erinnerung vervollständigen</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if final_text %}
+        <div class="response-section">
+            <h2>Vollständige Erinnerung</h2>
+            <p>{{ final_text }}</p>
+            <form method="post" action="/download_doc">
+                <button type="submit">Als .doc herunterladen</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+
